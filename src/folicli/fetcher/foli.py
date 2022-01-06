@@ -21,7 +21,10 @@ class FoliFetcher(Subscriber, Publisher):
                 i += 1
 
                 if i == 20:
-                    self.publish_message('FoliFetcher fetched something')
+                    self.publish_message({
+                        'event': 'status-update',
+                        'data': 'FoliFetcher fetched something',
+                    })
 
         except KeyboardInterrupt:
             self.stop_event.set()
