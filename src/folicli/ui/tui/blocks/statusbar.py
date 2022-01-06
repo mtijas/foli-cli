@@ -9,14 +9,11 @@ class StatusBar(Window, Observer):
         self.events.register_observer('status-update', self)
 
     def initial_render(self):
-        self.window.clear()
-        self.add_str(0, 1, 'Nothing yet')
-        self.window.refresh()
+        self.notify('initial', 'Nothing yet...')
 
     def notify(self, event:str, data):
         self.window.clear()
         self.add_str(0, 1, data)
-
         self.window.refresh()
 
 

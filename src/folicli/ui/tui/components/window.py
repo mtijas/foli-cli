@@ -15,6 +15,9 @@ class Window(ABC):
     def initial_render(self):
         pass
 
+    def set_bkgd(self, color_pair):
+        self.window.bkgd(' ', color_pair)
+
     def refresh(self):
         '''Refresh internal window'''
         self.window.refresh()

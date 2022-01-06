@@ -21,13 +21,17 @@ class TextUI(Subscriber, Publisher):
         curses.curs_set(0)
         if curses.has_colors:
             curses.start_color()
+            curses.use_default_colors()
+            self.init_color_pairs()
         curses.setsyx(-1, -1)
 
     def start(self):
         '''Start TextUI'''
         screen_height, screen_width = self.get_screen_size()
         titlebar = TitleBar(1, screen_width)
-        statusbar = StatusBar(screen_height-1, 30, 1, screen_width-30, self.events)
+        statusbar = StatusBar(1, screen_width, screen_height-1, 0, self.events)
+        if curses.has_colors:
+            titlebar.set_bkgd(curses.color_pair(13))
         titlebar.initial_render()
         statusbar.initial_render()
         try:
@@ -58,3 +62,17 @@ class TextUI(Subscriber, Publisher):
         '''Get screen size'''
         curses.update_lines_cols()
         return curses.LINES, curses.COLS
+
+    def init_color_pairs(self):
+        curses.init_pair(1, curses.COLOR_RED, -1)
+        curses.init_pair(2, curses.COLOR_GREEN, -1)
+        curses.init_pair(3, curses.COLOR_YELLOW, -1)
+        curses.init_pair(4, curses.COLOR_BLUE, -1)
+        curses.init_pair(5, curses.COLOR_MAGENTA, -1)
+        curses.init_pair(6, curses.COLOR_CYAN, -1)
+        curses.init_pair(11, curses.COLOR_BLACK, curses.COLOR_RED)
+        curses.init_pair(12, curses.COLOR_BLACK, curses.COLOR_GREEN)
+        curses.init_pair(13, curses.COLOR_BLACK, curses.COLOR_YELLOW)
+        curses.init_pair(14, curses.COLOR_BLACK, curses.COLOR_BLUE)
+        curses.init_pair(15, curses.COLOR_BLACK, curses.COLOR_MAGENTA)
+        curses.init_pair(16, curses.COLOR_BLACK, curses.COLOR_CYAN)
