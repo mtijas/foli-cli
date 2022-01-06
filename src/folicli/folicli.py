@@ -4,41 +4,46 @@ import multiprocessing as mp
 from time import sleep
 
 from ui.textui import TextUI
-from observable import Observable
+from messagebroker import MessageBroker
 from fetcher.foli import FoliFetcher
 
 if __name__ == '__main__':
-  stop_event = mp.Event()
+    stop_event = mp.Event()
 
-  broker = Observable()
-  ui = TextUI(stop_event, broker)
-  fetcher = FoliFetcher(stop_event, broker)
+    broker = MessageBroker(stop_event)
 
-  ui_process = mp.Process(target=ui.start)
-  fetcher_process = mp.Process(target=fetcher.start)
+    tui_publish_queue = broker.get_publisher_queue()
+    tui_subscribe_queue = broker.get_subscriber_queue()
+    ui = TextUI(stop_event, tui_publish_queue, tui_subscribe_queue)
 
-  ui_process.start()
-  fetcher_process.start()
+    fetcher_publish_queue = broker.get_publisher_queue()
+    fetcher_subscribe_queue = broker.get_subscriber_queue()
+    fetcher = FoliFetcher(stop_event, fetcher_publish_queue, fetcher_subscribe_queue)
 
-  i = 0
+    broker_process = mp.Process(target=broker.start)
+    ui_process = mp.Process(target=ui.start)
+    fetcher_process = mp.Process(target=fetcher.start)
 
-  try:
-    while not stop_event.is_set():
-      sleep(0.1)
-      if not ui_process.is_alive() or not fetcher_process.is_alive():
+    broker_process.start()
+    ui_process.start()
+    fetcher_process.start()
+
+    try:
+        while not stop_event.is_set():
+            sleep(0.1)
+            if not ui_process.is_alive() or not fetcher_process.is_alive() \
+              or not broker_process.is_alive():
+                stop_event.set()
+
+    except KeyboardInterrupt:
         stop_event.set()
 
-      i += 1
-      if i % 40 == 0:
-        broker.notify_observers('line_selection_update')
+    print('Stopping...')
 
-  except KeyboardInterrupt:
-    stop_event.set()
+    ui_process.join()
+    fetcher_process.join()
+    broker_process.join()
 
-  print('Stopping...')
-
-  ui_process.join()
-  fetcher_process.join()
-
-  ui_process.close()
-  fetcher_process.close()
+    ui_process.close()
+    fetcher_process.close()
+    broker_process.close()
