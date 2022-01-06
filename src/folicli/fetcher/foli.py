@@ -17,16 +17,11 @@ class FoliFetcher(Subscriber, Publisher):
 
         try:
             while not self.stop_event.is_set():
-                print(f'FoliFetcher is running as {name}, lap {i}')
-                sleep(1.1)
+                sleep(0.1)
                 i += 1
 
-                if i == 2:
+                if i == 20:
                     self.publish_message('FoliFetcher fetched something')
-
-                message = self.fetch_message()
-                if message is not None:
-                    print(f'FoliFetcher got {message}')
 
         except KeyboardInterrupt:
             self.stop_event.set()

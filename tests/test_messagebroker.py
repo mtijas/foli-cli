@@ -12,7 +12,8 @@ class TestMessageBroker(unittest.TestCase):
         self.subscriber_count = 10
         self.publisher_count = 10
         self.stop_event = mock_event
-        self.stop_event.is_set.side_effect = [False, False, False, True]
+        # Stop message broker after fifth round
+        self.stop_event.is_set.side_effect = [False, False, False, False, True]
         self.broker = MessageBroker(self.stop_event)
 
         self.subscriber_queues = []

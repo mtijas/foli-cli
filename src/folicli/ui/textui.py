@@ -1,5 +1,6 @@
 from multiprocessing import current_process
 from time import sleep
+import curses
 
 from messagebroker import Subscriber, Publisher
 
@@ -8,26 +9,33 @@ class TextUI(Subscriber, Publisher):
         self.stop_event = stop_event
         Publisher.__init__(self, pub_queue)
         Subscriber.__init__(self, sub_queue)
+        self.stdscr = curses.initscr()
+        curses.noecho()
+        curses.cbreak()
+        self.stdscr.keypad(True)
 
     def start(self):
         '''Start TextUI'''
-        i = 1
         name = current_process().name
 
         try:
             while not self.stop_event.is_set():
-                print(f'TextUI is running as {name}, lap {i}')
-                sleep(1)
+                sleep(0.1)
 
                 message = self.fetch_message()
                 if message is not None:
-                    print(f'TextUI got {message}')
+                    self.stdscr.addstr(0, 0, f'TextUI got {message}')
 
-                i += 1
-                if i > 30:
-                    self.stop_event.set()
+                self.stdscr.refresh()
+
         except KeyboardInterrupt:
-            self.stop_event.set()
+            pass # It's OK since we would only set stop_event flag here anyway
+        finally:
+            self.stop()
 
-    def notify(self, event, data):
-        print(f'TextUI got event {event} with {data}')
+    def stop(self):
+        self.stop_event.set()
+        curses.nocbreak()
+        self.stdscr.keypad(False)
+        curses.echo()
+        curses.endwin()
