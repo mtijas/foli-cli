@@ -32,7 +32,7 @@ class TextUI(Subscriber, Publisher):
         titlebar = TitleBar(1, screen_width)
         statusbar = StatusBar(1, screen_width, screen_height - 1, 0, self.events)
         if curses.has_colors:
-            titlebar.set_bkgd(curses.color_pair(13))
+            titlebar.set_background_color(13)
         titlebar.initial_render()
         statusbar.initial_render()
         try:

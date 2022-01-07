@@ -7,18 +7,17 @@ from ui.textui import TextUI
 from messagebroker import MessageBroker
 from fetcher.foli import FoliFetcher
 
+
 def main():
-    print('Starting Föli-CLI...')
+    print("Starting Föli-CLI...")
 
     stop_event = mp.Event()
 
     broker = MessageBroker(stop_event)
+    pub_queue = broker.get_publish_queue()
 
-    pub_queue, sub_queue = get_queues(broker)
-    ui = TextUI(stop_event, pub_queue, sub_queue)
-
-    pub_queue, sub_queue = get_queues(broker)
-    fetcher = FoliFetcher(stop_event, pub_queue, sub_queue)
+    ui = TextUI(stop_event, pub_queue, broker.get_new_subscriber_queue())
+    fetcher = FoliFetcher(stop_event, pub_queue, broker.get_new_subscriber_queue())
 
     started = start_processes(broker, ui, fetcher)
 
@@ -34,16 +33,11 @@ def main():
         for process in started:
             process.join()
             process.close()
-        print('Good bye!')
+        print("Good bye!")
 
-def get_queues(broker):
-    '''Get Queues for publishing and subscribing on MessageBroker'''
-    pub_queue = broker.get_publisher_queue()
-    sub_queue = broker.get_subscriber_queue()
-    return (pub_queue, sub_queue)
 
 def start_processes(*args):
-    '''Start arguments as multiprocessing Processes'''
+    """Start arguments as multiprocessing Processes"""
     started = []
     for target in args:
         process = mp.Process(target=target.start)
@@ -51,12 +45,18 @@ def start_processes(*args):
         started.append(process)
     return started
 
+
 def check_for_dead(processes):
-    '''Checks if any process has died'''
+    """Checks if any process has died
+
+    Arguments:
+    processes -- List of multiprocessing.Processes to check
+    """
     for process in processes:
         if not process.is_alive():
             return True
     return False
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
