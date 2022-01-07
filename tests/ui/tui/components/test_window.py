@@ -146,3 +146,16 @@ class TestWindow(unittest.TestCase):
             mocked_win.addnstr.assert_called_with(
                 0, test["x"], test["text"], 10 - test["x"]
             )
+
+    @mock.patch("src.folicli.ui.tui.components.window.curses")
+    def test_add_str_with_color(self, mocked_curses):
+        """Megalomaniac x makes text start from last character"""
+        mocked_win = Mock()
+        mocked_win.getmaxyx.return_value = (10, 10)
+        mocked_curses.newwin.return_value = mocked_win
+        mocked_curses.color_pair.return_value = "color_pair"
+        window = DummyWindow(10, 10)
+
+        window.add_str(0, 0, "test", 1)
+
+        mocked_win.addnstr.assert_called_once_with(0, 0, "test", 10, "color_pair")

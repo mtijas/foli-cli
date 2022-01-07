@@ -59,7 +59,7 @@ class Window(ABC):
 
         max_len = max_x - x
         if color is not None:
-            self.window.addnstr(y, x, text, max_len, color)
+            self.window.addnstr(y, x, text, max_len, curses.color_pair(color))
         else:
             self.window.addnstr(y, x, text, max_len)
 
