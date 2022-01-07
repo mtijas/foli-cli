@@ -1,6 +1,7 @@
 from multiprocessing import current_process
 from time import sleep
 import curses
+from datetime import datetime
 
 from messagebroker import Subscriber, Publisher
 from ui.tui.blocks.titlebar import TitleBar
@@ -29,7 +30,7 @@ class TextUI(Subscriber, Publisher):
     def start(self):
         """Start TextUI"""
         screen_height, screen_width = self.get_screen_size()
-        titlebar = TitleBar(1, screen_width)
+        titlebar = TitleBar(1, screen_width, events=self.events)
         statusbar = StatusBar(1, screen_width, screen_height - 1, 0, self.events)
         if curses.has_colors:
             titlebar.set_background_color(13)
@@ -43,6 +44,7 @@ class TextUI(Subscriber, Publisher):
                         self.events.notify_observers(message["event"], message["data"])
                     else:
                         self.events.notify_observers("generic", message)
+                self.emit_time()
                 sleep(0.05)
 
         except KeyboardInterrupt:
@@ -61,6 +63,12 @@ class TextUI(Subscriber, Publisher):
         """Get screen size"""
         curses.update_lines_cols()
         return curses.LINES, curses.COLS
+
+    def emit_time(self):
+        """Emits current time to observers"""
+        now = datetime.now()
+        current_time = now.strftime("%H:%M")
+        self.events.notify_observers("formatted-time-update", current_time)
 
     def init_color_pairs(self):
         curses.init_pair(1, curses.COLOR_RED, -1)
