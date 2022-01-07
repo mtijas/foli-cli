@@ -57,7 +57,7 @@ class Window(ABC):
         y = self._limit_between(y, 0, max_y - 1)
         x = self._limit_between(x, 0, max_x - 1)
 
-        max_len = max_x - x
+        max_len = max_x - x - 1
         if color is not None:
             self.window.addnstr(y, x, text, max_len, curses.color_pair(color))
         else:
