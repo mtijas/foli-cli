@@ -5,7 +5,8 @@ import curses
 from messagebroker import Subscriber, Publisher
 from ui.tui.blocks.titlebar import TitleBar
 from ui.tui.blocks.statusbar import StatusBar
-from ui.observable import Observable
+from observable import Observable
+
 
 class TextUI(Subscriber, Publisher):
     def __init__(self, stop_event, pub_queue, sub_queue):
@@ -26,28 +27,26 @@ class TextUI(Subscriber, Publisher):
         curses.setsyx(-1, -1)
 
     def start(self):
-        '''Start TextUI'''
+        """Start TextUI"""
         screen_height, screen_width = self.get_screen_size()
         titlebar = TitleBar(1, screen_width)
-        statusbar = StatusBar(1, screen_width, screen_height-1, 0, self.events)
+        statusbar = StatusBar(1, screen_width, screen_height - 1, 0, self.events)
         if curses.has_colors:
             titlebar.set_bkgd(curses.color_pair(13))
         titlebar.initial_render()
         statusbar.initial_render()
         try:
             while not self.stop_event.is_set():
-
                 message = self.fetch_message()
                 if message is not None:
-                    if 'event' in message and 'data' in message:
-                        self.events.notify_observers(message['event'], message['data'])
+                    if "event" in message and "data" in message:
+                        self.events.notify_observers(message["event"], message["data"])
                     else:
-                        self.events.notify_observers('generic', message)
-
+                        self.events.notify_observers("generic", message)
                 sleep(0.05)
 
         except KeyboardInterrupt:
-            pass # It's OK since we would only set stop_event flag here anyway
+            pass  # It's OK since we would only set stop_event flag here anyway
         finally:
             self.stop()
 
@@ -59,7 +58,7 @@ class TextUI(Subscriber, Publisher):
         curses.endwin()
 
     def get_screen_size(self):
-        '''Get screen size'''
+        """Get screen size"""
         curses.update_lines_cols()
         return curses.LINES, curses.COLS
 
