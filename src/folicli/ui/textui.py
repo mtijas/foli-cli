@@ -30,8 +30,10 @@ class TextUI(Subscriber, Publisher):
     def start(self):
         """Start TextUI"""
         screen_height, screen_width = self.get_screen_size()
-        titlebar = TitleBar(1, screen_width, events=self.events)
-        statusbar = StatusBar(1, screen_width, screen_height - 1, 0, self.events)
+        titlebar = TitleBar(1, screen_width, observable=self.events)
+        statusbar = StatusBar(
+            1, screen_width, screen_height - 1, 0, observable=self.events
+        )
         if curses.has_colors:
             titlebar.set_background_color(13)
         titlebar.initial_render()

@@ -4,6 +4,9 @@ from abc import ABC, abstractmethod
 class Observer(ABC):
     """Observer for any Observable"""
 
+    def __init__(self, observable):
+        self.observable = observable
+
     @abstractmethod
     def notify(self, event: str, data):
         """Notify callback for Observable to call on every new notification.

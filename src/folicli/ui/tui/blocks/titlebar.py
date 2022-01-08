@@ -4,11 +4,16 @@ from observable import Observable, Observer
 
 class TitleBar(Window, Observer):
     def __init__(
-        self, height: int, width: int, y: int = 0, x: int = 0, events: Observable = None
+        self,
+        height: int,
+        width: int,
+        y: int = 0,
+        x: int = 0,
+        observable: Observable = None,
     ):
-        super().__init__(height, width, y, x)
-        self.events = events
-        self.events.register_observer("formatted-time-update", self)
+        Window.__init__(self, height, width, y, x)
+        Observer.__init__(self, observable)
+        self.observable.register_observer("formatted-time-update", self)
 
     def initial_render(self):
         self.window.clear()
