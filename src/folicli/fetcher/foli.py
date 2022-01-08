@@ -24,8 +24,8 @@ class FoliFetcher(Subscriber, Publisher):
                 if i == 20:
                     self.publish_message(
                         {
-                            "event": "status-update",
-                            "data": "FoliFetcher fetched something",
+                            "event": "polling-interval-update",
+                            "data": 3,
                         }
                     )
 

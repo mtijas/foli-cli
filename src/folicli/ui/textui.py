@@ -4,7 +4,7 @@ import curses
 from datetime import datetime
 
 from messagebroker import Subscriber, Publisher
-from ui.tui.blocks.titlebar import TitleBar
+from ui.tui.blocks.header import Header
 from ui.tui.blocks.statusbar import StatusBar
 from observable import Observable
 
@@ -30,13 +30,11 @@ class TextUI(Subscriber, Publisher):
     def start(self):
         """Start TextUI"""
         screen_height, screen_width = self.get_screen_size()
-        titlebar = TitleBar(1, screen_width, observable=self.events)
+        header = Header(screen_width, observable=self.events)
         statusbar = StatusBar(
             1, screen_width, screen_height - 1, 0, observable=self.events
         )
-        if curses.has_colors:
-            titlebar.set_background_color(13)
-        titlebar.initial_render()
+        header.initial_render()
         statusbar.initial_render()
         try:
             while not self.stop_event.is_set():
@@ -64,7 +62,7 @@ class TextUI(Subscriber, Publisher):
     def get_screen_size(self):
         """Get screen size"""
         curses.update_lines_cols()
-        return curses.LINES, curses.COLS
+        return curses.LINES, curses.COLS - 1
 
     def emit_time(self):
         """Emits current time to observers"""

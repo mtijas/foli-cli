@@ -18,7 +18,28 @@ class Window(ABC):
         self.width = width if width > 0 else 1
         self.y = y if y >= 0 else 0
         self.x = x if x >= 0 else 0
+        self.children = []
         self.window = curses.newwin(self.height, self.width, self.y, self.x)
+
+    def add_child(self, child):
+        """Add a child Window component.
+
+        Arguments:
+        child -- a Window object to be added as a child
+
+        Raises RuntimeWarning in case current object should not have children
+        """
+        raise RuntimeWarning("This component should not have children")
+
+    def remove_child(self, child):
+        """Remove a child Window component.
+
+        Arguments:
+        child -- a Window object to be removed
+
+        Raises RuntimeWarning in case current object should not have children
+        """
+        raise RuntimeWarning("This component should not have children")
 
     @abstractmethod
     def initial_render(self):
@@ -39,60 +60,3 @@ class Window(ABC):
     def refresh(self):
         """Refresh internal window"""
         self.window.refresh()
-
-    def add_str(self, y: int, x: int, text: str, color: int = None):
-        """Add string to current window
-
-        Cuts text at right border of the window.
-        Limits start column and line to window bounds.
-
-        Arguments:
-        y -- Line in which to add text
-        x -- Position of first character in x axis
-        text -- Text to be added
-        color -- Color pair id if color is desired to be changed
-        """
-        max_y, max_x = self.window.getmaxyx()
-
-        y = self._limit_between(y, 0, max_y - 1)
-        x = self._limit_between(x, 0, max_x - 1)
-
-        max_len = max_x - x - 1
-        if color is not None:
-            self.window.addnstr(y, x, text, max_len, curses.color_pair(color))
-        else:
-            self.window.addnstr(y, x, text, max_len)
-
-    def add_centered_str(self, y: int, text: str, color: int = None):
-        """Add centered string to current window
-
-        Cuts text at right border of the window.
-        Limits line length to window width.
-
-        Arguments:
-        y -- Line in which to add the text
-        text -- Text to be added
-        color -- Color pair id if color is desired to be changed
-        """
-        _, max_x = self.window.getmaxyx()
-        x = max_x // 2 - len(text) // 2
-        if x < 0:
-            x = 0
-        self.add_str(y, x, text, color)
-
-    def _limit_between(self, value, lower_boundary, upper_boundary):
-        """Limit value between min and max
-
-        Arguments:
-        value -- Value to be limited
-        lower_boundary -- Lower boundary
-        upper_boundary -- Upper boundary
-
-        Returns bounded value
-        """
-        if value < lower_boundary:
-            return lower_boundary
-        elif value > upper_boundary:
-            return upper_boundary
-        else:
-            return value
