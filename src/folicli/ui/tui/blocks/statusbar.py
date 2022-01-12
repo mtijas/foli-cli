@@ -24,7 +24,11 @@ class StatusBar(TextWindow, Observer):
         self.window.clear()
         if event == "polling-interval-update":
             if data > 0:
-                self.add_str(0, 0, f"Polling: every {data} seconds")
+                self.add_str(
+                    0,
+                    0,
+                    f"Polling: every {data} seconds",
+                )
             else:
                 self.add_str(0, 0, "Polling: OFF")
         self.refresh()

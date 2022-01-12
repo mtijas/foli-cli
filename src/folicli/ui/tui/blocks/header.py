@@ -15,11 +15,12 @@ class Header(CompositeComponent):
         observable: Observable = None,
     ):
         """Construct a new Header"""
-        super().__init__()
-        titlebar = TitleBar(1, width, y, 0)
-        timedisplay = TimeDisplay(y, width - 6, observable=observable)
+        super().__init__(1, width, y, x)
+        titlebar = TitleBar(1, width, y, x)
+        timedisplay = TimeDisplay(y, width - 7, observable=observable)
         self.add_child(titlebar)
         self.add_child(timedisplay)
 
         if curses.has_colors:
             self.set_background_color(13)
+            timedisplay.set_background_color(12)

@@ -18,8 +18,9 @@ class Window(ABC):
         self.width = width if width > 0 else 1
         self.y = y if y >= 0 else 0
         self.x = x if x >= 0 else 0
-        self.children = []
         self.window = curses.newwin(self.height, self.width, self.y, self.x)
+        self.window.keypad(True)
+        self.window.nodelay(True)
 
     def add_child(self, child):
         """Add a child Window component.
@@ -60,3 +61,18 @@ class Window(ABC):
     def refresh(self):
         """Refresh internal window"""
         self.window.refresh()
+
+    def getch(self):
+        """Get ch from internal window
+
+        Returns int of char (basically what Python Curses getch() returns
+        """
+        return self.window.getch()
+
+    def get_max_yx(self):
+        """Gets rightmost column and last line numbers for internal window
+
+        Returns tuple of (bottom line, rightmost column)
+        """
+        max_y, max_x = self.window.getmaxyx()
+        return (max_y - 1, max_x - 1)

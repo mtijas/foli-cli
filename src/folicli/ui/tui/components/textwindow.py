@@ -35,12 +35,12 @@ class TextWindow(Window):
         text -- Text to be added
         color -- Color pair id if color is desired to be changed
         """
-        max_y, max_x = self.window.getmaxyx()
+        max_y, max_x = self.get_max_yx()
 
-        y = self._limit_between(y, 0, max_y - 1)
-        x = self._limit_between(x, 0, max_x - 1)
+        y = self._limit_between(y, 0, max_y)
+        x = self._limit_between(x, 0, max_x)
 
-        max_len = max_x - x - 1
+        max_len = max_x - x
         if color is not None:
             self.window.addnstr(y, x, text, max_len, curses.color_pair(color))
         else:

@@ -1,6 +1,7 @@
+import logging
+import queue
 from abc import ABC, abstractmethod
 from multiprocessing import Queue
-import queue
 from time import sleep
 
 
@@ -34,7 +35,7 @@ class Subscriber:
 
 
 class Publisher:
-    """Publisher for publishin interprocess messages through MessageBroker"""
+    """Publisher for publishing interprocess messages through MessageBroker"""
 
     def __init__(self, queue):
         """Constructor
@@ -76,9 +77,10 @@ class MessageBroker:
         Arguments:
         stop_event -- A multiprocessing.Event for gracefully stopping operations
         """
-        self.stop_event = stop_event
-        self.subscribers = []
-        self.publish_queue = Queue()
+        self._stop_event = stop_event
+        self._subscribers = []
+        self._publish_queue = Queue()
+        self._logger = logging.getLogger("foli-cli.messagebroker.MessageBroker")
 
     def attach_subscriber(self, subscriber: Queue):
         """Attach a subscriber queue to broker
@@ -86,8 +88,8 @@ class MessageBroker:
         Arguments:
         subscriber -- Queue to be added to MessageBroker
         """
-        if subscriber not in self.subscribers:
-            self.subscribers.append(subscriber)
+        if subscriber not in self._subscribers:
+            self._subscribers.append(subscriber)
 
     def detach_subscriber(self, subscriber: Queue):
         """Detach a subscriber queue from broker
@@ -95,12 +97,12 @@ class MessageBroker:
         Arguments:
         subscriber -- Previously attached Queue
         """
-        if subscriber in self.subscribers:
-            self.subscribers.remove(subscriber)
+        if subscriber in self._subscribers:
+            self._subscribers.remove(subscriber)
 
     def get_publish_queue(self) -> Queue:
         """Returns publish queue"""
-        return self.publish_queue
+        return self._publish_queue
 
     def get_new_subscriber_queue(self) -> Queue:
         """Creates a new subscriber queue, attachs it and returns it"""
@@ -115,13 +117,13 @@ class MessageBroker:
         one-by-one to every subscriber attached at the time.
         """
         try:
-            while not self.stop_event.is_set():
+            while not self._stop_event.is_set():
                 data = self._get_published_data()
                 if data is not None:
                     self._forward_data_to_subscribers(data)
                 sleep(0.1)
         except KeyboardInterrupt:
-            self.stop_event.set()
+            self._stop_event.set()
 
     def _get_published_data(self):
         """Tries to get data from a publisher Queue
@@ -129,8 +131,8 @@ class MessageBroker:
         Returns data if able, None otherwise
         """
         try:
-            if not self.publish_queue.empty():
-                return self.publish_queue.get_nowait()
+            if not self._publish_queue.empty():
+                return self._publish_queue.get_nowait()
         except queue.Empty:
             pass  # Empty queue is OK
         return None
@@ -140,5 +142,6 @@ class MessageBroker:
 
         Arguments:
         data -- A data blob to be forwarded to subscribers"""
-        for subscriber in self.subscribers:
+        self._logger.debug(f"Forwarding data")
+        for subscriber in self._subscribers:
             subscriber.put_nowait(data)

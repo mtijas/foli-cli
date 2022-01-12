@@ -1,10 +1,12 @@
 import curses
+from .window import Window
 
 
-class CompositeComponent:
+class CompositeComponent(Window):
     """Curses-based composite block for building Text UI"""
 
-    def __init__(self):
+    def __init__(self, height: int, width: int, y: int = 0, x: int = 0):
+        super().__init__(height, width, y, x)
         self.children = []
 
     def initial_render(self):

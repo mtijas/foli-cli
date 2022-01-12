@@ -17,9 +17,10 @@ class TextUI(Subscriber, Publisher):
         Publisher.__init__(self, pub_queue)
         Subscriber.__init__(self, sub_queue)
         self.stdscr = curses.initscr()
+        self.stdscr.keypad(True)
+        self.stdscr.nodelay(True)
         curses.noecho()
         curses.cbreak()
-        self.stdscr.keypad(True)
         curses.curs_set(0)
         if curses.has_colors:
             curses.start_color()
@@ -34,17 +35,22 @@ class TextUI(Subscriber, Publisher):
         statusbar = StatusBar(
             1, screen_width, screen_height - 1, 0, observable=self.events
         )
+        header.getch()  # Quick'n'dirty fix for first getch clearing window
         header.initial_render()
         statusbar.initial_render()
         try:
             while not self.stop_event.is_set():
-                message = self.fetch_message()
-                if message is not None:
-                    if "event" in message and "data" in message:
-                        self.events.notify_observers(message["event"], message["data"])
-                    else:
-                        self.events.notify_observers("generic", message)
+                self.pass_messagebroker_events()
                 self.emit_time()
+
+                c = header.getch()
+                if c == curses.KEY_RESIZE:
+                    self.events.notify_observers(
+                        "screen-resize", self.get_screen_size()
+                    )
+                elif c == ord("q"):
+                    self.stop_event.set()
+
                 sleep(0.05)
 
         except KeyboardInterrupt:
@@ -53,6 +59,7 @@ class TextUI(Subscriber, Publisher):
             self.stop()
 
     def stop(self):
+        """Stop operations reverting terminal"""
         self.stop_event.set()
         curses.nocbreak()
         self.stdscr.keypad(False)
@@ -62,7 +69,17 @@ class TextUI(Subscriber, Publisher):
     def get_screen_size(self):
         """Get screen size"""
         curses.update_lines_cols()
-        return curses.LINES, curses.COLS - 1
+        return curses.LINES, curses.COLS
+
+    def pass_messagebroker_events(self):
+        """Pass events fetched from MessageBroker queue to event observers"""
+        message = self.fetch_message()
+        if message is None:
+            return
+        if "event" in message and "data" in message:
+            self.events.notify_observers(message["event"], message["data"])
+        else:
+            self.events.notify_observers("generic", message)
 
     def emit_time(self):
         """Emits current time to observers"""

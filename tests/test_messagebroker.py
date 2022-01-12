@@ -19,7 +19,7 @@ class TestMessageBroker(unittest.TestCase):
         self.mock_queue = Mock()
         self.mock_queue.get_nowait.side_effect = [{1}, {2}, {3}]
         self.mock_queue.empty.side_effect = [False, False, False, True]
-        self.broker.publish_queue = self.mock_queue
+        self.broker._publish_queue = self.mock_queue
 
         self.subscriber_queues = []
         for i in range(self.subscriber_count):
@@ -31,7 +31,7 @@ class TestMessageBroker(unittest.TestCase):
             self.broker.attach_subscriber(q)
 
         for q in self.subscriber_queues:
-            self.assertIn(q, self.broker.subscribers)
+            self.assertIn(q, self.broker._subscribers)
 
     def test_detach_subscriber_queues(self):
         """Subscriber queues should be able to be detached"""
@@ -40,7 +40,7 @@ class TestMessageBroker(unittest.TestCase):
 
         self.broker.detach_subscriber(self.subscriber_queues[0])
 
-        self.assertNotIn(self.subscriber_queues[0], self.broker.subscribers)
+        self.assertNotIn(self.subscriber_queues[0], self.broker._subscribers)
 
     def test_message_passing(self):
         """Test message passing from publish queue to subscribe queues"""
@@ -56,7 +56,7 @@ class TestMessageBroker(unittest.TestCase):
         """Subscriber queue should be added and returned"""
         result = self.broker.get_new_subscriber_queue()
 
-        self.assertIn(result, self.broker.subscribers)
+        self.assertIn(result, self.broker._subscribers)
 
     def test_getting_publisher_queue(self):
         """Publisher queue should be proper"""

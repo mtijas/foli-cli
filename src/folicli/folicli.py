@@ -1,15 +1,20 @@
 #!/usr/bin/python3
 
+import logging
+import logging.handlers
 import multiprocessing as mp
+from logging.handlers import SysLogHandler
 from time import sleep
 
-from ui.textui import TextUI
-from messagebroker import MessageBroker
 from fetcher.foli import FoliFetcher
+from messagebroker import MessageBroker
+from ui.textui import TextUI
 
 
 def main():
     print("Starting Föli-CLI...")
+    _logger = setup_logging()
+    _logger.debug("Starting Föli-CLI")
 
     stop_event = mp.Event()
 
@@ -56,6 +61,26 @@ def check_for_dead(processes):
         if not process.is_alive():
             return True
     return False
+
+
+def setup_logging():
+    """Setup global logging
+
+    Returns logger instance
+    """
+    logger = logging.getLogger("foli-cli")
+    logger.setLevel(logging.DEBUG)
+
+    syslog_formatter = logging.Formatter("%(name)s [%(levelname)s]: %(message)s")
+    syslog_handler = logging.handlers.SysLogHandler(
+        facility=SysLogHandler.LOG_LOCAL0, address="/dev/log"
+    )
+    syslog_handler.setLevel(logging.DEBUG)
+    syslog_handler.setFormatter(syslog_formatter)
+
+    logger.addHandler(syslog_handler)
+
+    return logger
 
 
 if __name__ == "__main__":
