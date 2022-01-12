@@ -1,16 +1,19 @@
+import curses
+import logging
+from datetime import datetime
 from multiprocessing import current_process
 from time import sleep
-import curses
-from datetime import datetime
 
-from messagebroker import Subscriber, Publisher
+from messagebroker import Publisher, Subscriber
+from observable import Observable
+
 from ui.tui.blocks.header import Header
 from ui.tui.blocks.statusbar import StatusBar
-from observable import Observable
 
 
 class TextUI(Subscriber, Publisher):
     def __init__(self, stop_event, pub_queue, sub_queue):
+        self._logger = logging.getLogger("foli-cli.ui.textui.TextUi")
         self.stop_event = stop_event
         self.events = Observable()
 
@@ -39,6 +42,7 @@ class TextUI(Subscriber, Publisher):
         header.initial_render()
         statusbar.initial_render()
         try:
+            self._logger.debug("Starting TextUI main loop")
             while not self.stop_event.is_set():
                 self.pass_messagebroker_events()
                 self.emit_time()
@@ -52,8 +56,10 @@ class TextUI(Subscriber, Publisher):
                     self.stop_event.set()
 
                 sleep(0.05)
+            self._logger.debug("Stopping TextUI main loop")
 
         except KeyboardInterrupt:
+            self._logger.debug("Got KeyboardInterrupt")
             pass  # It's OK since we would only set stop_event flag here anyway
         finally:
             self.stop()

@@ -12,9 +12,8 @@ from ui.textui import TextUI
 
 
 def main():
-    print("Starting Föli-CLI...")
-    _logger = setup_logging()
-    _logger.debug("Starting Föli-CLI")
+    logger = setup_logging()
+    logger.info("Starting Föli-CLI")
 
     stop_event = mp.Event()
 
@@ -27,18 +26,21 @@ def main():
     started = start_processes(broker, ui, fetcher)
 
     try:
+        logger.debug("Starting main loop")
         while not stop_event.is_set():
             sleep(0.1)
             if check_for_dead(started):
                 stop_event.set()
+        logger.debug("Stopping main loop")
 
     except KeyboardInterrupt:
+        logger.debug("Got KeyboardInterrupt")
         stop_event.set()
     finally:
+        logger.info("Stopping Föli-CLI")
         for process in started:
             process.join()
             process.close()
-        print("Good bye!")
 
 
 def start_processes(*args):

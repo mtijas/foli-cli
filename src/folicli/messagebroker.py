@@ -117,12 +117,15 @@ class MessageBroker:
         one-by-one to every subscriber attached at the time.
         """
         try:
+            self._logger.debug("Starting message transfer loop")
             while not self._stop_event.is_set():
                 data = self._get_published_data()
                 if data is not None:
                     self._forward_data_to_subscribers(data)
                 sleep(0.1)
+            self._logger.debug("Stopping message transfer loop")
         except KeyboardInterrupt:
+            self._logger.debug("Got KeyboardInterrupt")
             self._stop_event.set()
 
     def _get_published_data(self):

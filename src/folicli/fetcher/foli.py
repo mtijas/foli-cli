@@ -1,7 +1,8 @@
+import logging
 from multiprocessing import current_process
 from time import sleep
 
-from messagebroker import Subscriber, Publisher
+from messagebroker import Publisher, Subscriber
 
 
 class FoliFetcher(Subscriber, Publisher):
@@ -9,6 +10,7 @@ class FoliFetcher(Subscriber, Publisher):
         self.stop_event = stop_event
         Publisher.__init__(self, pub_queue)
         Subscriber.__init__(self, sub_queue)
+        self._logger = logging.getLogger("foli-cli.fetcher.foli.FoliFetcher")
 
     def start(self):
         """Start FoliFetcher"""
@@ -17,6 +19,7 @@ class FoliFetcher(Subscriber, Publisher):
         name = current_process().name
 
         try:
+            self._logger.debug("Starting FoliFetcher main loop")
             while not self.stop_event.is_set():
                 sleep(0.1)
                 i += 1
@@ -28,6 +31,8 @@ class FoliFetcher(Subscriber, Publisher):
                             "data": 3,
                         }
                     )
+            self._logger.debug("Stopping FoliFetcher main loop")
 
         except KeyboardInterrupt:
+            self._logger.debug("Got KeyboardInterrupt")
             self.stop_event.set()
