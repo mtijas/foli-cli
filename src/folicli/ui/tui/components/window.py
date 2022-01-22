@@ -1,4 +1,5 @@
 import curses
+import logging
 from abc import ABC, abstractmethod
 
 
@@ -14,6 +15,7 @@ class Window(ABC):
         y -- Position of top left corner, y axis. In lines.
         x -- Position of top left corner, x axis. In characters.
         """
+        self._logger = logging.getLogger("foli-cli.ui.tui.components.Window")
         self.height = height if height > 0 else 1
         self.width = width if width > 0 else 1
         self.y = y if y >= 0 else 0
@@ -22,31 +24,51 @@ class Window(ABC):
         self.window.keypad(True)
         self.window.nodelay(True)
 
-    def add_child(self, child):
+    def add_child(self, name: str, child):
         """Add a child Window component.
 
         Arguments:
+        name -- Name of the window for easier usage
         child -- a Window object to be added as a child
 
         Raises RuntimeWarning in case current object should not have children
         """
         raise RuntimeWarning("This component should not have children")
 
-    def remove_child(self, child):
+    def remove_child(self, name: str):
         """Remove a child Window component.
 
         Arguments:
-        child -- a Window object to be removed
+        name -- name of the window to be removed
 
         Raises RuntimeWarning in case current object should not have children
         """
         raise RuntimeWarning("This component should not have children")
 
-    @abstractmethod
     def initial_render(self):
-        """Initial render of Window contents.
+        """Initial render of window.
 
-        Gives ability to render static parts of the window initially.
+        Clears window and calls static and dynamic renders.
+        """
+        self.window.erase()
+        if curses.has_colors():
+            self.set_background_color(0)
+        self.static_render()
+        self.dynamic_render()
+
+    @abstractmethod
+    def static_render(self):
+        """Render of static Window contents.
+
+        Gives ability to render static parts of the window.
+        """
+        pass
+
+    @abstractmethod
+    def dynamic_render(self):
+        """Render of dynamic Window contents.
+
+        Gives ability to render dynamic parts of the window.
         """
         pass
 
@@ -60,7 +82,8 @@ class Window(ABC):
 
     def refresh(self):
         """Refresh internal window"""
-        self.window.refresh()
+        if self.window.is_wintouched():
+            self.window.refresh()
 
     def getch(self):
         """Get ch from internal window
@@ -76,3 +99,29 @@ class Window(ABC):
         """
         max_y, max_x = self.window.getmaxyx()
         return (max_y - 1, max_x - 1)
+
+    def move(self, new_y: int = 0, new_x: int = 0):
+        """Move window to a new location
+
+        Arguments:
+        new_y -- New Y location
+        new_x -- New X location
+        """
+        self._logger.debug(f"Moving window to y:{new_y} x:{new_x}")
+        self.y = new_y
+        self.x = new_x
+        self.window.mvwin(new_y, new_x)
+        self.window.touchwin()
+
+    def resize(self, height: int, width: int):
+        """Resize window
+
+        Arguments:
+        height -- Height of the window
+        width -- Width of the window
+        """
+        self._logger.debug(f"Resizing window to h:{height} w:{width}")
+        self.height = height
+        self.width = width
+        self.window.resize(height, width)
+        self.initial_render()

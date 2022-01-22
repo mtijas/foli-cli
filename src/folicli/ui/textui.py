@@ -16,6 +16,7 @@ class TextUI(Subscriber, Publisher):
         self._logger = logging.getLogger("foli-cli.ui.textui.TextUi")
         self.stop_event = stop_event
         self.events = Observable()
+        self.blocks = {}
 
         Publisher.__init__(self, pub_queue)
         Subscriber.__init__(self, sub_queue)
@@ -38,9 +39,15 @@ class TextUI(Subscriber, Publisher):
         statusbar = StatusBar(
             1, screen_width, screen_height - 1, 0, observable=self.events
         )
+
+        self.blocks["header"] = header
+        self.blocks["statusbar"] = statusbar
+
         header.getch()  # Quick'n'dirty fix for first getch clearing window
-        header.initial_render()
-        statusbar.initial_render()
+
+        for block in self.blocks.values():
+            block.initial_render()
+
         try:
             self._logger.debug("Starting TextUI main loop")
             while not self.stop_event.is_set():
@@ -49,11 +56,12 @@ class TextUI(Subscriber, Publisher):
 
                 c = header.getch()
                 if c == curses.KEY_RESIZE:
-                    self.events.notify_observers(
-                        "screen-resize", self.get_screen_size()
-                    )
+                    self.resize()
                 elif c == ord("q"):
                     self.stop_event.set()
+
+                for block in self.blocks.values():
+                    block.refresh()
 
                 sleep(0.05)
             self._logger.debug("Stopping TextUI main loop")
@@ -76,6 +84,14 @@ class TextUI(Subscriber, Publisher):
         """Get screen size"""
         curses.update_lines_cols()
         return curses.LINES, curses.COLS
+
+    def resize(self):
+        height, width = self.get_screen_size()
+        self.stdscr.clear()
+        self.stdscr.refresh()
+        self.blocks["header"].resize(1, width)
+        self.blocks["statusbar"].resize(1, width)
+        self.blocks["statusbar"].move(height - 1, 0)
 
     def pass_messagebroker_events(self):
         """Pass events fetched from MessageBroker queue to event observers"""

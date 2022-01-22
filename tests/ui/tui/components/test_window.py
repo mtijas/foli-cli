@@ -6,7 +6,10 @@ from src.folicli.ui.tui.components.window import Window
 
 
 class DummyWindow(Window):
-    def initial_render(self):
+    def static_render(self):
+        pass
+
+    def dynamic_render(self):
         pass
 
 

@@ -16,10 +16,17 @@ class TextWindow(Window):
         """
         super().__init__(height, width, y, x)
 
-    def initial_render(self):
-        """Initial render of Window contents.
+    def static_render(self):
+        """Render of static Window contents.
 
-        Gives ability to render static parts of the window initially.
+        Gives ability to render static parts of the window.
+        """
+        pass
+
+    def dynamic_render(self):
+        """Render of dynamic Window contents.
+
+        Gives ability to render dynamic parts of the window.
         """
         pass
 

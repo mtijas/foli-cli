@@ -17,10 +17,17 @@ class Header(CompositeComponent):
         """Construct a new Header"""
         super().__init__(1, width, y, x)
         titlebar = TitleBar(1, width, y, x)
-        timedisplay = TimeDisplay(y, width - 7, observable=observable)
-        self.add_child(titlebar)
-        self.add_child(timedisplay)
+        timedisplay = TimeDisplay(y, width - 8, observable=observable)
+        self.add_child("titlebar", titlebar)
+        self.add_child("timedisplay", timedisplay)
 
-        if curses.has_colors:
-            self.set_background_color(13)
-            timedisplay.set_background_color(12)
+    def resize(self, height: int, width: int):
+        """Resize child windows
+
+        Arguments:
+        height -- Height of the window
+        width -- Width of the window
+        """
+        self.width = width
+        self.children["timedisplay"].move(0, width - 8)
+        self.children["titlebar"].resize(1, width)

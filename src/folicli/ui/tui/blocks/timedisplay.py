@@ -1,5 +1,7 @@
-from ui.tui.components.textwindow import TextWindow
+import curses
+
 from observable import Observable, Observer
+from ui.tui.components.textwindow import TextWindow
 
 
 class TimeDisplay(TextWindow, Observer):
@@ -14,12 +16,12 @@ class TimeDisplay(TextWindow, Observer):
         Observer.__init__(self, observable)
         self.observable.register_observer("formatted-time-update", self)
 
-    def initial_render(self):
-        self.window.clear()
+    def static_render(self):
+        """Render placeholder as static"""
+        if curses.has_colors:
+            self.set_background_color(12)
         self.add_str(0, 0, " --:-- ")
-        self.refresh()
 
     def notify(self, event: str, data):
         if event == "formatted-time-update":
             self.add_str(0, 0, f" {data} ")
-            self.refresh()

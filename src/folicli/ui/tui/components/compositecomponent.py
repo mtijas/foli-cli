@@ -7,38 +7,47 @@ class CompositeComponent(Window):
 
     def __init__(self, height: int, width: int, y: int = 0, x: int = 0):
         super().__init__(height, width, y, x)
-        self.children = []
+        self.children = {}
 
     def initial_render(self):
-        """Initial render of Window contents.
+        """Initial render of child window.
 
-        Gives ability to render static parts of the window initially.
+        Clears child window and calls static and dynamic renders.
         """
-        for child in self.children:
-            child.initial_render()
+        for child in self.children.values():
+            child.window.clear()
+            child.static_render()
+            child.dynamic_render()
 
-    def add_child(self, child):
+    def static_render(self):
+        """Render of static Window contents."""
+        for child in self.children.values():
+            child.static_render()
+
+    def dynamic_render(self):
+        """Render of dynamic Window contents."""
+        for child in self.children.values():
+            child.dynamic_render()
+
+    def add_child(self, name: str, child):
         """Add a child Window component.
 
         Arguments:
+        name -- Name of the window for easier usage
         child -- a Window object to be added as a child
-
-        Raises RuntimeWarning in case current object should not have children
         """
-        if child in self.children:
+        if name in self.children:
             return
 
-        self.children.append(child)
+        self.children[name] = child
 
-    def remove_child(self, child):
+    def remove_child(self, name: str):
         """Remove a child Window component.
 
         Arguments:
-        child -- a Window object to be removed
-
-        Raises RuntimeWarning in case current object should not have children
+        name -- name of the window to be removed
         """
-        self.children.remove(child)
+        del self.children[name]
 
     def set_background_color(self, color_pair_id: int):
         """Set background color of every child
@@ -46,10 +55,11 @@ class CompositeComponent(Window):
         Arguments:
         color_pair_id -- Number/id of curses.color_pair for background color.
         """
-        for child in self.children:
+        for child in self.children.values():
             child.set_background_color(color_pair_id)
 
     def refresh(self):
         """Refresh internal window of every child"""
-        for child in self.children:
-            child.refresh()
+        for child in self.children.values():
+            if child.window.is_wintouched():
+                child.window.refresh()
