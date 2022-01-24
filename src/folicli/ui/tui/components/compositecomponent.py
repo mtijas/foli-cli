@@ -61,5 +61,4 @@ class CompositeComponent(Window):
     def refresh(self):
         """Refresh internal window of every child"""
         for child in self.children.values():
-            if child.window.is_wintouched():
-                child.window.refresh()
+            child.window.refresh()

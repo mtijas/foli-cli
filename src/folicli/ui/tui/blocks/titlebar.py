@@ -18,3 +18,4 @@ class TitleBar(TextWindow):
         if curses.has_colors:
             self.set_background_color(13)
         self.add_centered_str(0, "Foli CLI")
+        self.refresh()

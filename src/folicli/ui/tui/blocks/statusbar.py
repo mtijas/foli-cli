@@ -18,6 +18,7 @@ class StatusBar(TextWindow, Observer):
 
     def static_render(self):
         self.add_str(0, 0, "Polling: ")
+        self.refresh()
 
     def dynamic_render(self):
         self.window.move(0, 9)
@@ -26,6 +27,7 @@ class StatusBar(TextWindow, Observer):
             self.add_str(0, 9, f"every {self.polling_interval} seconds")
         else:
             self.add_str(0, 9, f"OFF")
+        self.refresh()
 
     def notify(self, event: str, data):
         if event == "polling-interval-update":

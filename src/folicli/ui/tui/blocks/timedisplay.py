@@ -21,7 +21,9 @@ class TimeDisplay(TextWindow, Observer):
         if curses.has_colors:
             self.set_background_color(12)
         self.add_str(0, 0, " --:-- ")
+        self.refresh()
 
     def notify(self, event: str, data):
         if event == "formatted-time-update":
             self.add_str(0, 0, f" {data} ")
+            self.refresh()

@@ -34,6 +34,8 @@ class TextUI(Subscriber, Publisher):
 
     def start(self):
         """Start TextUI"""
+        resize_timer = 0
+        resize_required = False
         screen_height, screen_width = self.get_screen_size()
         header = Header(screen_width, observable=self.events)
         statusbar = StatusBar(
@@ -56,14 +58,21 @@ class TextUI(Subscriber, Publisher):
 
                 c = header.getch()
                 if c == curses.KEY_RESIZE:
-                    self.resize()
+                    resize_timer = 0
+                    resize_required = True
                 elif c == ord("q"):
                     self.stop_event.set()
 
                 for block in self.blocks.values():
                     block.refresh()
 
-                sleep(0.05)
+                if resize_required:
+                    if resize_timer >= 3:
+                        self.resize()
+                        resize_required = False
+                    resize_timer += 1
+
+                sleep(0.1)
             self._logger.debug("Stopping TextUI main loop")
 
         except KeyboardInterrupt:

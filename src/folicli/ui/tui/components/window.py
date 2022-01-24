@@ -107,7 +107,7 @@ class Window(ABC):
         new_y -- New Y location
         new_x -- New X location
         """
-        self._logger.debug(f"Moving window to y:{new_y} x:{new_x}")
+        # self._logger.debug(f"Moving window to y:{new_y} x:{new_x}")
         self.y = new_y
         self.x = new_x
         self.window.mvwin(new_y, new_x)
@@ -120,7 +120,7 @@ class Window(ABC):
         height -- Height of the window
         width -- Width of the window
         """
-        self._logger.debug(f"Resizing window to h:{height} w:{width}")
+        # self._logger.debug(f"Resizing window to h:{height} w:{width}")
         self.height = height
         self.width = width
         self.window.resize(height, width)
